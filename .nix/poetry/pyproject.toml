@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "jrg-pypi2bitbake-py-deps"
+version = "0.0.0"
+description = """\
+    The set of python dependencies \
+    required by the jrg-pypi2bitbake tool.\
+    """
+authors = [
+    "Raymond Gauthier <jraygauthier@gmail.com>",
+]
+license = "Apache 2.0"
+
+[tool.poetry.dependencies]
+python = ">=3.7,<4"
+pip = "*"
+setuptools = "*"
+wheel = "*"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
