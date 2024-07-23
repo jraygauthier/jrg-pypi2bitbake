@@ -73,6 +73,7 @@
               projectPython.pkgs.poetry-core
               projectPython.pkgs.hatchling
               projectPython.pkgs.hatch-vcs
+              projectPython.pkgs.flit-core
               projectPython.pkgs.pkginfo
               projectPython.pkgs.pip
               gnutar
