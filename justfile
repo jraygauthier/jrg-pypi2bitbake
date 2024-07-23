@@ -92,8 +92,15 @@ _mk_recipe_files: _mk-recipe-out-dir
         declare pkg_version
         pkg_version="$(echo "$pkg_info_json" | jq -j '.version')"
 
+        # Note the awk part is for getting rid of the license content
+        # which is returned after 2 space characters by pkg_info json
+        # representation.
         declare license_name
-        license_name="$(echo "$pkg_info_json" | jq -j '.license')"
+        license_name="$( \
+          echo "$pkg_info_json" \
+          | jq -j '.license' \
+          | awk -F'  ' '{ print $1 }'
+        )"
 
         declare summary
         summary="$(echo "$pkg_info_json" | jq -j '.summary')"
@@ -103,6 +110,7 @@ _mk_recipe_files: _mk-recipe-out-dir
 
         declare -A lic_py2yocto=( \
           ["MIT"]="MIT" \
+          ["MIT License"]="MIT" \
         )
 
         declare lic_yocto_name="$license_name"
