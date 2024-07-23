@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# shellcheck disable=SC2129
+set -euf -o pipefail
+
+sdist_out_dir="${1:?}"
+requirements_in_file="${2:?}"
+
+mkdir -p "$sdist_out_dir"
+
+cd "$sdist_out_dir" \
+  && pip download \
+    --disable-pip-version-check \
+    --no-deps \
+    --no-build-isolation \
+    --no-binary=:all: \
+    -r "$requirements_in_file"
