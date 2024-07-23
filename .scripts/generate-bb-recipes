@@ -42,16 +42,40 @@ while read -r archive; do
 
   1>&2 echo "DEBUG: license_file='$license_file'"
 
+  exists_archive_file() {
+    declare in_archive="${1?}"
+    declare in_rel_filename="${2?}"
+    if [[ "$in_archive" == *.tar.gz ]]; then
+      tar \
+        --wildcards "**/${in_rel_filename}" --use-compress-program=gzip \
+        -xOzf \
+        "$in_archive" \
+        > /dev/null 2>&1
+    elif [[ "$in_archive" == *.zip ]]; then
+      unzip -p "$in_archive" "*/${in_rel_filename}" \
+        > /dev/null 2>&1
+    else
+      false
+    fi
+  }
+
+  extract_archive_file() {
+    declare in_archive="${1?}"
+    declare in_rel_filename="${2?}"
+    if [[ "$in_archive" == *.tar.gz ]]; then
+      tar \
+        --wildcards "**/${in_rel_filename}" --use-compress-program=gzip \
+        -xOzf \
+        "$in_archive"
+    elif [[ "$in_archive" == *.zip ]]; then
+      unzip -p "$in_archive" "*/${in_rel_filename}"
+    else
+      false
+    fi
+  }
+
   declare license
-  if [[ "$archive" == *.tar.gz ]]; then
-    license="$(tar \
-      --wildcards "**/${license_file}" --use-compress-program=gzip \
-      -xOzf \
-      "$archive" \
-    )"
-  elif [[ "$archive" == *.zip ]]; then
-    license="$(unzip -p "$archive" "*/${license_file}")"
-  else
+  if ! license="$(extract_archive_file "$archive" "$license_file")"; then
     1>&2 printf -- "ERROR: Cannot extract license from python sdist.\n"
     1>&2 printf -- " -> Unsupported sdist file format: '%s'.\n" \
       "$archive"
@@ -137,6 +161,34 @@ while read -r archive; do
   1>&2 echo "DEBUG: license_name='$license_name'"
   1>&2 echo "DEBUG: lic_yocto_name='$lic_yocto_name'"
 
+  declare buildtool=""
+  if pkg_file_content="$(exists_archive_file "$archive" "setup.py")"; then
+    buildtool="setuptools"
+  elif pkg_file_content="$(extract_archive_file "$archive" "pyproject.toml")"; then
+    if echo "$pkg_file_content" | tomlq -e '.tool.poetry' > /dev/null; then
+      buildtool="poetry"
+    elif echo "$pkg_file_content" | tomlq -e '.tool.hatch' > /dev/null; then
+      buildtool="hatch"
+    elif echo "$pkg_file_content" | tomlq -e '.tool.flit' > /dev/null; then
+      buildtool="flit"
+    fi
+  fi
+
+  declare buildtool_bbclasses=""
+  if [[ "$buildtool" == "setuptools" ]]; then
+    buildtool_bbclasses="setuptools3"
+  elif [[ "$buildtool" == "poetry" ]]; then
+    buildtool_bbclasses="python_poetry_core"
+  elif [[ "$buildtool" == "hatch" ]]; then
+    buildtool_bbclasses="python_hatchling"
+  elif [[ "$buildtool" == "flit" ]]; then
+    buildtool_bbclasses="python_flit_core"
+  else
+    1>&2 printf -- "WARNING: Unable to detect a compatible build tool.\n"
+    1>&2 printf -- " -> Assuming setuptools.\n"
+    buildtool_bbclasses="setuptools3"
+  fi
+
   declare recipe_out_file="${recipe_out_dir}/python3-${pkg_name}_${pkg_version}.bb"
 
   printf -- 'SUMMARY = "%s"\n' "$summary" > "$recipe_out_file"
@@ -151,7 +203,7 @@ while read -r archive; do
   printf -- "\n" >> "$recipe_out_file"
   # printf -- 'PYPI_PACKAGE = "%s"\n' "$pkg_name" >> "$recipe_out_file"
   # printf -- "\n" >> "$recipe_out_file"
-  printf -- "inherit setuptools3 pypi\n" >> "$recipe_out_file"
+  printf -- "inherit pypi %s\n" "$buildtool_bbclasses" >> "$recipe_out_file"
   printf -- "\n" >> "$recipe_out_file"
   printf -- 'BBCLASSEXTEND = "native nativesdk"\n' >> "$recipe_out_file"
 
