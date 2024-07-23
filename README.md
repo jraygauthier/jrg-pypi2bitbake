@@ -7,20 +7,22 @@ requirements file.
 
 ## Prequisites
 
-Install [nix](https://nixos.org/download.html).
-
-Enter the reproducible environments.
+### Entering the reproducible environment
 
 ```bash
 $ cd /path/to/this/repo
+$ nix develop
 # ..
-$ nix-shell
-# ..
-[nix-shell:/path/to/this/repo]$
 ```
 
 Once within the environment, all required dependencies will be available for
 this tool to run properly.
+
+The above requires that [`nix` is installed][nix-install] and that the [flakes
+feature is enabled][nix-flake-enabled].
+
+[nix-install]: https://nixos.org/download
+[nix-flake-enabled]: https://nixos.wiki/wiki/Flakes#Enable_flakes_permanently_in_NixOS
 
 
 ## Usage
