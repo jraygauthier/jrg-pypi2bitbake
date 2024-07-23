@@ -79,6 +79,7 @@
               gnutar
               gzip
               jq
+              yq
             ];
 
             shellHook = ''
