@@ -100,10 +100,28 @@ _mk_recipe_files: _mk-recipe-out-dir
         declare homepage
         homepage="$(echo "$pkg_info_json" | jq -j '.home_page')"
 
+        declare -A lic_py2yocto=( \
+          ["MIT"]="MIT" \
+        )
+
+        declare lic_yocto_name="$license_name"
+        if [[ "${lic_py2yocto["${license_name}"]+x}" = "x" ]]; then
+            lic_yocto_name="${lic_py2yocto["${license_name}"]}"
+        else
+            1>&2 printf -- "WARNING: No matching yocto license name for '%s'.\n" \
+              "$license_name"
+            1>&2 printf -- " -> Keeping license name as is.\n"
+            lic_yocto_name="$license_name"
+        fi
+
+        1>&2 echo "DEBUG: license_name='$license_name'"
+        1>&2 echo "DEBUG: lic_yocto_name='$lic_yocto_name'"
+
         declare recipe_out_file="{{ recipe_out_dir }}/python3-${pkg_name}_${pkg_version}.bb"
 
         printf -- 'SUMMARY = "%s"\n' "$summary" > "$recipe_out_file"
         printf -- 'HOMEPAGE = "%s"\n' "$homepage" >> "$recipe_out_file"
+        printf -- 'LICENSE = "%s"\n' "$lic_yocto_name" >> "$recipe_out_file"
         printf -- 'LIC_FILES_CHKSUM = "file://%s;md5=%s"\n' \
           "$license_file" "$license_md5" >> "$recipe_out_file"
 
