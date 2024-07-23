@@ -113,7 +113,7 @@ _mk_recipe_files: _mk-recipe-out-dir
         printf -- "\n" >> "$recipe_out_file"
         # printf -- 'PYPI_PACKAGE = "%s"\n' "$pkg_name" >> "$recipe_out_file"
         # printf -- "\n" >> "$recipe_out_file"
-        printf -- "inherit pypi setuptools3\n" >> "$recipe_out_file"
+        printf -- "inherit setuptools3 pypi\n" >> "$recipe_out_file"
         printf -- "\n" >> "$recipe_out_file"
         printf -- 'BBCLASSEXTEND = "native nativesdk"\n' >> "$recipe_out_file"
 
