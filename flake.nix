@@ -71,6 +71,8 @@
               poetry
               projectPython.pkgs.poetry-dynamic-versioning
               projectPython.pkgs.poetry-core
+              projectPython.pkgs.hatchling
+              projectPython.pkgs.hatch-vcs
               projectPython.pkgs.pkginfo
               projectPython.pkgs.pip
               gnutar
