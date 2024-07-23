@@ -52,7 +52,8 @@ _mk_recipe_files: _mk-recipe-out-dir
         license_file="$(echo "$pkg_info_raw" | grep -E '^License-File' | head -n 1 | awk '{ print $2 }' | awk -v RS='\r' '{ print $1}')"
 
         if [[ -z "$license_file" ]]; then
-            1>&2 printf -- "WARNING: Missing 'License-File' pkg info field. Defaulting to 'LICENSE'.\n"
+            1>&2 printf -- "WARNING: Missing 'License-File' pkg info field.\n"
+            1>&2 printf -- " -> Defaulting to 'LICENSE'.\n"
             license_file="LICENSE"
         fi
 
