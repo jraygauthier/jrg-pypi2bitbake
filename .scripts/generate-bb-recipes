@@ -287,7 +287,7 @@ while read -r archive; do
       # with the required information to keep or discard this
       # requirement.
       # shellcheck disable=SC2016
-      printf -- '  ${@ "%s" and "" } \\\n' \
+      printf -- "  \${@ '''\`%s\`''' and '' } \\\\\n" \
         "${reqs_opt["$req"]}" >> "$recipe_out_file"
       # shellcheck disable=SC2016
       printf -- '    ${PYTHON_PN}-%s \\\n' \
