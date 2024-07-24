@@ -249,8 +249,14 @@ while read -r archive; do
     fi
   done < <(echo "$pkg_info_json" | jq -ecr '.requires_dist[]')
 
+  to_yocto_pkg_name() {
+    tr '_' '-'
+  }
 
-  declare recipe_out_file="${recipe_out_dir}/python3-${pkg_name}_${pkg_version}.bb"
+  declare yocto_pkg_name
+  yocto_pkg_name="$(echo "$pkg_name" | to_yocto_pkg_name)"
+
+  declare recipe_out_file="${recipe_out_dir}/python3-${yocto_pkg_name}_${pkg_version}.bb"
 
   printf -- 'SUMMARY = "%s"\n' "$summary" > "$recipe_out_file"
   printf -- 'HOMEPAGE = "%s"\n' "$yocto_homepage" >> "$recipe_out_file"
@@ -270,8 +276,10 @@ while read -r archive; do
     printf -- 'RDEPENDS:${PN}:class-target = "\\\n' >> "$recipe_out_file"
     declare req
     for req in "${!reqs_mand[@]}"; do
+      declare yocto_req
+      yocto_req="$(echo "$req" | to_yocto_pkg_name)"
       # shellcheck disable=SC2016
-      printf -- '    ${PYTHON_PN}-%s \\\n' "$req" >> "$recipe_out_file"
+      printf -- '    ${PYTHON_PN}-%s \\\n' "$yocto_req" >> "$recipe_out_file"
     done
     printf -- '"\n' >> "$recipe_out_file"
     printf -- '\n' >> "$recipe_out_file"
@@ -289,9 +297,12 @@ while read -r archive; do
       # shellcheck disable=SC2016
       printf -- "  \${@ '''\`%s\`''' and '' } \\\\\n" \
         "${reqs_opt["$req"]}" >> "$recipe_out_file"
+
+      declare yocto_req
+      yocto_req="$(echo "$req" | to_yocto_pkg_name)"
       # shellcheck disable=SC2016
       printf -- '    ${PYTHON_PN}-%s \\\n' \
-        "$req" >> "$recipe_out_file"
+        "$yocto_req" >> "$recipe_out_file"
     done
     printf -- '"\n' >> "$recipe_out_file"
     printf -- '\n' >> "$recipe_out_file"
