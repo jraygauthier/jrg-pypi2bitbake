@@ -217,6 +217,39 @@ while read -r archive; do
     buildtool_bbclasses="setuptools3"
   fi
 
+  # Parse requirements.
+  declare -A reqs_mand=()
+  declare -A reqs_opt=()
+  declare req_line
+  while read -r req_line; do
+    declare pkg_seg
+    pkg_seg="$(echo "$req_line" | awk -F';' '{ print $1 }')"
+    declare rest
+    rest="$(echo "$req_line" | awk -F';' '{ $1=""; print $0 }')"
+    declare pkg
+    pkg="$(echo "$pkg_seg" | sed -E -e 's/^([a-zA-Z0-9\-_]+).*$/\1/g')"
+    declare constraints
+    constraints="$( \
+      echo "$rest" \
+      | awk '{gsub(/^ +| +$/,"")} {print $0 }' \
+    )"
+
+    if [ -z "$pkg" ]; then
+      # Unexpected, but we still want to filter that out.
+      1>&2 printf -- "WARNING: Requirement line parse error.\n"
+      1>&2 printf -- " -  Line was: '%s'.\n" "$req_line"
+      1>&2 printf -- " -> Skipping.\n"
+      continue
+    fi
+
+    if [[ -z "$constraints" ]]; then
+      reqs_mand+=( ["$pkg"]="$constraints" );
+    elif ! [[ "${reqs_mand["$pkg"]+x}" = "x" ]]; then
+      reqs_opt+=( ["$pkg"]="$constraints" );
+    fi
+  done < <(echo "$pkg_info_json" | jq -ecr '.requires_dist[]')
+
+
   declare recipe_out_file="${recipe_out_dir}/python3-${pkg_name}_${pkg_version}.bb"
 
   printf -- 'SUMMARY = "%s"\n' "$summary" > "$recipe_out_file"
@@ -231,6 +264,39 @@ while read -r archive; do
   printf -- "\n" >> "$recipe_out_file"
   # printf -- 'PYPI_PACKAGE = "%s"\n' "$pkg_name" >> "$recipe_out_file"
   # printf -- "\n" >> "$recipe_out_file"
+
+  if [ "${#reqs_mand[@]}" -ne 0 ]; then
+    # shellcheck disable=SC2016
+    printf -- 'RDEPENDS:${PN}:class-target = "\\\n' >> "$recipe_out_file"
+    declare req
+    for req in "${!reqs_mand[@]}"; do
+      # shellcheck disable=SC2016
+      printf -- '    ${PYTHON_PN}-%s \\\n' "$req" >> "$recipe_out_file"
+    done
+    printf -- '"\n' >> "$recipe_out_file"
+    printf -- '\n' >> "$recipe_out_file"
+  fi
+
+  if [ "${#reqs_opt[@]}" -ne 0 ]; then
+    # shellcheck disable=SC2016
+    printf -- 'RDEPENDS:${PN}:extras = "\\\n' >> "$recipe_out_file"
+    for req in "${!reqs_opt[@]}"; do
+      # A trick to create a kind human readable guard for this
+      # optional dependency that resolve to the empty string
+      # when interpreted by bitbake. This should provide user
+      # with the required information to keep or discard this
+      # requirement.
+      # shellcheck disable=SC2016
+      printf -- '  ${@ "%s" and "" } \\\n' \
+        "${reqs_opt["$req"]}" >> "$recipe_out_file"
+      # shellcheck disable=SC2016
+      printf -- '    ${PYTHON_PN}-%s \\\n' \
+        "$req" >> "$recipe_out_file"
+    done
+    printf -- '"\n' >> "$recipe_out_file"
+    printf -- '\n' >> "$recipe_out_file"
+  fi
+
   printf -- "inherit pypi %s\n" "$buildtool_bbclasses" >> "$recipe_out_file"
   printf -- "\n" >> "$recipe_out_file"
   printf -- 'BBCLASSEXTEND = "native nativesdk"\n' >> "$recipe_out_file"
