@@ -275,10 +275,12 @@ while read -r archive; do
   fi
 
   if [ "${#reqs_mand[@]}" -ne 0 ]; then
+    declare reqs_sorted
+    reqs_sorted="$(printf '%s\n' "${!reqs_mand[@]}" | sort)"
     # shellcheck disable=SC2016
     printf -- 'RDEPENDS:${PN}:class-target = "\\\n' >> "$recipe_out_file"
     declare req
-    for req in "${!reqs_mand[@]}"; do
+    for req in $reqs_sorted; do
       declare yocto_req
       yocto_req="$(echo "$req" | to_yocto_pkg_name)"
       # shellcheck disable=SC2016
@@ -289,9 +291,12 @@ while read -r archive; do
   fi
 
   if [ "${#reqs_opt[@]}" -ne 0 ]; then
+    declare reqs_sorted
+    reqs_sorted="$(printf '%s\n' "${!reqs_opt[@]}" | sort)"
     # shellcheck disable=SC2016
     printf -- 'RDEPENDS:${PN}:extras = "\\\n' >> "$recipe_out_file"
-    for req in "${!reqs_opt[@]}"; do
+    declare req
+    for req in $reqs_sorted; do
       # A trick to create a kind human readable guard for this
       # optional dependency that resolve to the empty string
       # when interpreted by bitbake. This should provide user
