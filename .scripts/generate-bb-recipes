@@ -110,6 +110,20 @@ while read -r archive; do
     | awk -F'  ' '{ print $1 }'
   )"
 
+  if [[ "$license_name" == "null" ]]; then
+    declare alt_license_name
+    if alt_license_name="$( \
+      echo "$pkg_info_json" \
+      | jq -e -c -r '.classifiers[]' \
+      | grep --ignore-case '^License' \
+      | awk -F' :: ' '{ print $NF }' \
+      | awk '{gsub(/^ +| +$/,"")} {print $0 }' \
+    )"; then
+      license_name="$alt_license_name"
+      1>&2 echo "DEBUG: alt_license_name='$alt_license_name'"
+    fi
+  fi
+
   declare summary
   summary="$(echo "$pkg_info_json" | jq -j '.summary')"
 
@@ -146,6 +160,7 @@ while read -r archive; do
   declare -A lic_py2yocto=( \
     ["MIT"]="MIT" \
     ["MIT License"]="MIT" \
+    ["Python Software Foundation License"]="PSF-2.0" \
   )
 
   declare lic_yocto_name="$license_name"
