@@ -165,12 +165,16 @@ while read -r archive; do
   if pkg_file_content="$(exists_archive_file "$archive" "setup.py")"; then
     buildtool="setuptools"
   elif pkg_file_content="$(extract_archive_file "$archive" "pyproject.toml")"; then
-    if echo "$pkg_file_content" | tomlq -e '.tool.poetry' > /dev/null; then
-      buildtool="poetry"
-    elif echo "$pkg_file_content" | tomlq -e '.tool.hatch' > /dev/null; then
-      buildtool="hatch"
-    elif echo "$pkg_file_content" | tomlq -e '.tool.flit' > /dev/null; then
-      buildtool="flit"
+    if echo "$pkg_file_content" \
+      | tomlq -e '.["build-system"].["build-backend"]' > /dev/null; then
+      # Uses a <https://peps.python.org/pep-0517/> build tool.
+      if echo "$pkg_file_content" | tomlq -e '.tool.poetry' > /dev/null; then
+        buildtool="poetry"
+      elif echo "$pkg_file_content" | tomlq -e '.tool.hatch' > /dev/null; then
+        buildtool="hatch"
+      elif echo "$pkg_file_content" | tomlq -e '.tool.flit' > /dev/null; then
+        buildtool="flit"
+      fi
     fi
   fi
 
