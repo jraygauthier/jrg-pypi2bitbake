@@ -268,8 +268,11 @@ while read -r archive; do
   echo "$src_uri_line" >> "$recipe_out_file"
 
   printf -- "\n" >> "$recipe_out_file"
-  # printf -- 'PYPI_PACKAGE = "%s"\n' "$pkg_name" >> "$recipe_out_file"
-  # printf -- "\n" >> "$recipe_out_file"
+
+  if [[ "$yocto_pkg_name" != "$pkg_name" ]]; then
+    printf -- 'PYPI_PACKAGE = "%s"\n' "$pkg_name" >> "$recipe_out_file"
+    printf -- "\n" >> "$recipe_out_file"
+  fi
 
   if [ "${#reqs_mand[@]}" -ne 0 ]; then
     # shellcheck disable=SC2016
