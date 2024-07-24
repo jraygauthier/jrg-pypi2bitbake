@@ -227,7 +227,7 @@ while read -r archive; do
     declare rest
     rest="$(echo "$req_line" | awk -F';' '{ $1=""; print $0 }')"
     declare pkg
-    pkg="$(echo "$pkg_seg" | sed -E -e 's/^([a-zA-Z0-9\-_]+).*$/\1/g')"
+    pkg="$(echo "$pkg_seg" | sed -E -e 's/^([a-zA-Z0-9_\-]+).*$/\1/g')"
     declare constraints
     constraints="$( \
       echo "$rest" \
