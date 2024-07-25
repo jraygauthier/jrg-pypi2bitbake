@@ -278,7 +278,7 @@ while read -r archive; do
     declare reqs_sorted
     reqs_sorted="$(printf '%s\n' "${!reqs_mand[@]}" | sort)"
     # shellcheck disable=SC2016
-    printf -- 'RDEPENDS:${PN}:class-target = "\\\n' >> "$recipe_out_file"
+    printf -- 'RDEPENDS:${PN} += "\\\n' >> "$recipe_out_file"
     declare req
     for req in $reqs_sorted; do
       declare yocto_req
@@ -294,7 +294,7 @@ while read -r archive; do
     declare reqs_sorted
     reqs_sorted="$(printf '%s\n' "${!reqs_opt[@]}" | sort)"
     # shellcheck disable=SC2016
-    printf -- 'RDEPENDS:${PN}-extras = "\\\n' >> "$recipe_out_file"
+    printf -- 'RDEPENDS:${PN}-extras += "\\\n' >> "$recipe_out_file"
     declare req
     for req in $reqs_sorted; do
       # A trick to create a kind human readable guard for this
