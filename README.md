@@ -54,9 +54,14 @@ and the intermediate python sdist under `./out/sdist`.
 
 ## To do
 
- -  Add support for dependencies.
+ -  Improve support for optional / extra dependencies.
 
-    Currently, this tool won't generate the recipe's dependencies.
+    Currently, those are all output under a single `RDEPENDS:${PN}-extras` extra
+    group with enough human readable meta information for the end user to
+    manually classify those later as needed.
+
+    Note that as complex combinations of logical operators are allowed, it would
+    be pretty involved to classify each dependency under its proper extra group.
 
  -  Add support for generating transitive depdencies.
 
