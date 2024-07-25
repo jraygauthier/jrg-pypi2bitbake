@@ -83,3 +83,7 @@ and the intermediate python sdist under `./out/sdist`.
     Attempted to use this tool and found out unexpected / dangerous use of
     `sudo`. Attempted to fix the tool only to find out it would not work on some
     dependencies.
+
+## License
+
+Licensed under Apache License, Version 2.0 [LICENSE](./LICENSE).
