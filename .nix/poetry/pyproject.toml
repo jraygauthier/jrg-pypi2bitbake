@@ -1,9 +1,9 @@
 [tool.poetry]
-name = "jrg-pypi2bitbake-py-deps"
+name = "pypi2bitbake-py-deps"
 version = "0.0.0"
 description = """\
     The set of python dependencies \
-    required by the jrg-pypi2bitbake tool.\
+    required by the pypi2bitbake tool.\
     """
 authors = [
     "Raymond Gauthier <jraygauthier@gmail.com>",
